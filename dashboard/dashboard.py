@@ -51,15 +51,15 @@ def create_bystate_df(df):
 
     return bystate_df, most_common_state
 
-# def create_bycity_df(df):
-#     bycity_df = df.groupby(by="customer_city").customer_id.nunique().reset_index()
-#     bycity_df.rename(columns={
-#         "customer_id": "customer_count"
-#     }, inplace=True)
-#     most_common_city = bycity_df.loc[bycity_df['customer_count'].idxmax(), 'customer_city']
-#     bycity_df = bycity_df.sort_values(by='customer_count', ascending=False)
+def create_bycity_df(df):
+    bycity_df = df.groupby(by="customer_city").customer_id.nunique().reset_index()
+    bycity_df.rename(columns={
+        "customer_id": "customer_count"
+    }, inplace=True)
+    most_common_city = bycity_df.loc[bycity_df['customer_count'].idxmax(), 'customer_city']
+    bycity_df = bycity_df.sort_values(by='customer_count', ascending=False)
 
-#     return bycity_df, most_common_city
+    return bycity_df, most_common_city
 
 def create_rfm_df(df):
     rfm_df = df.groupby(by="customer_id", as_index=False).agg({
@@ -67,17 +67,18 @@ def create_rfm_df(df):
         "order_id": "nunique",
         "payment_value": "sum"  # Menghitung total nilai pembayaran
     })
-    rfm_df.columns = ["customer_id", "max_purchase_timestamp", "frequency", "monetary"]
     
-    rfm_df["max_purchase_timestamp"] = rfm_df["max_purchase_timestamp"].dt.date
-    recent_date = df["purchase_date"].dt.date.max()
-    rfm_df["recency"] = rfm_df["max_purchase_timestamp"].apply(lambda x: (recent_date - x).days)
-    rfm_df.drop("max_purchase_timestamp", axis=1, inplace=True)
+    rfm_df.columns = ["customer_id", "max_purchase_timestamp", "frequency", "monetary"]
+    rfm_df["max_purchase_timestamp"] = pd.to_datetime(rfm_df["max_purchase_timestamp"])
+    rfm_df["max_purchase_date"] = pd.to_datetime(rfm_df["max_purchase_timestamp"].dt.date)
+    recent_date = df["order_purchase_timestamp"].dt.date.max()
+    rfm_df["recency"] = (pd.to_datetime(recent_date) - rfm_df["max_purchase_date"]).dt.days 
+    rfm_df.drop("max_purchase_date", axis=1, inplace=True)
     
     return rfm_df
 
 # Load cleaned data
-all_df = pd.read_csv("./submission-analisis-data-python/dashboard/all_data.csv")
+all_df = pd.read_csv('https://raw.githubusercontent.com/ridhoabdi/streamlit-e-commerce-public-dashboard/main/dashboard/all_data.csv')
 datetime_columns = ["order_approved_at", "order_delivered_carrier_date", "order_delivered_customer_date", "order_estimated_delivery_date", "order_purchase_timestamp", "shipping_limit_date"]
 all_df.sort_values(by="order_approved_at", inplace=True)
 all_df.reset_index(inplace=True)
@@ -104,13 +105,12 @@ main_df = all_df[(all_df["order_approved_at"] >= str(start_date)) &
                  (all_df["order_approved_at"] <= str(end_date))]
 
 # Menyiapkan berbagai dataframe
-daily_orders_df = function.create_daily_orders_df()
-sum_spend_df = function.create_sum_spend_df()
-sum_order_items_df = function.create_sum_order_items_df()
-review_score, common_score = function.review_score_df()
-state, most_common_state = function.create_bystate_df()
-# city, most_common_city = function.create_bycity_df()
-order_status, common_status = function.create_order_status()
+daily_orders_df = create_daily_orders_df(main_df)
+sum_spend_df = create_sum_spend_df(main_df)
+sum_order_items_df = create_sum_order_items_df(main_df)
+bystate_df = create_bystate_df(main_df)
+bycity_df = create_bycity_df(main_df)
+rfm_df = create_rfm_df(main_df)
 
 # plot number of daily orders
 st.header('E-Commerce Dashboard :sparkles:')
@@ -140,5 +140,126 @@ ax.tick_params(axis='x', labelsize=15)
 
 st.pyplot(fig)
 
+# Product performance
+st.subheader("Best & Worst Performing Product")
 
+sum_order_items_df = all_df.groupby("product_category_name_english")["product_id"].count().reset_index()
+sum_order_items_df = sum_order_items_df.rename(columns={"product_id": "products"})
+sum_order_items_df = sum_order_items_df.sort_values(by="products", ascending=False)
+sum_order_items_df = sum_order_items_df.head(10)
+
+fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(35, 15))
+
+colors = ["#72BCD4", "#D3D3D3", "#D3D3D3", "#D3D3D3", "#D3D3D3"]
+
+sns.barplot(x="products", y="product_category_name_english", data=sum_order_items_df.head(5), palette=colors, ax=ax[0])
+ax[0].set_ylabel(None)
+ax[0].set_xlabel(None)
+ax[0].set_title("Best Performing Product", loc="center", fontsize=50)
+ax[0].tick_params(axis ='y', labelsize=35)
+ax[0].tick_params(axis='x', labelsize=30)
+
+sns.barplot(x="products", y="product_category_name_english", data=sum_order_items_df.sort_values(by="products", ascending=True).head(5), palette=colors, ax=ax[1])
+ax[1].set_ylabel(None)
+ax[1].set_xlabel("Number of Sales", fontsize=30)
+ax[1].invert_xaxis()
+ax[1].yaxis.set_label_position("right")
+ax[1].yaxis.tick_right()
+ax[1].set_title("Worst Performing Product", loc="center", fontsize=50)
+ax[1].tick_params(axis='y', labelsize=35)
+ax[1].tick_params(axis='x', labelsize=30)
+
+st.pyplot(fig)
+
+# Customers Demographic
+st.subheader("Customer Demographics")
+
+# by states
+bystate_df = all_df.groupby(by="customer_state").customer_id.nunique().reset_index()
+bystate_df.rename(columns={
+    "customer_id": "customer_count"
+}, inplace=True)
+bystate_df.head()
+
+fig, ax = plt.subplots(figsize=(20, 10))
+most_common_state = bystate_df.loc[bystate_df['customer_count'].idxmax(), 'customer_state']
+
+bystate_df = bystate_df.sort_values(by='customer_count', ascending=False)
+
+sns.barplot(x='customer_state',
+            y='customer_count',
+            data=bystate_df,
+            palette=["#72BCD4" if state == most_common_state else "#D3D3D3" for state in bystate_df['customer_state']])
+
+ax.set_title("Number of Customer by States", loc="center", fontsize=30)
+plt.xlabel("State")
+plt.ylabel("Number of Customers")
+ax.tick_params(axis='y', labelsize=20)
+ax.tick_params(axis='x', labelsize=15)
+st.pyplot(fig)
+
+# by city
+bycity_df = all_df['customer_city'].value_counts().head(10)
+fig, ax = plt.subplots(figsize=(20, 10))
+most_common_city = bycity_df.idxmax()
+bycity_df = bycity_df.sort_values(ascending=False)
+sns.barplot(x=bycity_df.index,
+            y=bycity_df.values,
+            palette=["#72BCD4" if city == most_common_city else "#D3D3D3" for city in bycity_df.index])
+
+ax.set_title("Number of Customer by Cities", loc="center", fontsize=30)
+plt.xlabel("City")
+plt.ylabel("Number of Customers")
+plt.xticks(rotation=45, fontsize=10)
+ax.tick_params(axis='y', labelsize=20)
+ax.tick_params(axis='x', labelsize=15)
+st.pyplot(fig)
+
+# Best Customer Based on RFM Parameters
+st.subheader("Best Customer Based on RFM Parameters")
+
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    avg_recency = round(rfm_df.recency.mean(), 1)
+    st.metric("Average Recency (days)", value=avg_recency)
+
+with col2:
+    avg_frequency = round(rfm_df.frequency.mean(), 2)
+    st.metric("Average Frequency", value=avg_frequency)
+
+with col3:
+    avg_frequency = format_currency(rfm_df.monetary.mean(), "AUD", locale='es_CO') 
+    st.metric("Average Monetary", value=avg_frequency)
+
+fig, ax = plt.subplots(nrows=1, ncols=3, figsize=(35, 15))
+colors = ["#90CAF9", "#90CAF9", "#90CAF9", "#90CAF9", "#90CAF9"]
+
+sns.barplot(y="recency", x="customer_id", data=rfm_df.sort_values(by="recency", ascending=True).head(5), palette=colors, ax=ax[0])
+ax[0].set_ylabel(None)
+ax[0].set_xlabel("customer_id", fontsize=30)
+ax[0].set_title("By Recency (days)", loc="center", fontsize=50)
+ax[0].tick_params(axis='y', labelsize=30)
+ax[0].tick_params(axis='x', labelsize=35)
+ax[0].set_xticklabels(ax[0].get_xticklabels(), rotation=90, ha='center')
+
+sns.barplot(y="frequency", x="customer_id", data=rfm_df.sort_values(by="frequency", ascending=False).head(5), palette=colors, ax=ax[1])
+ax[1].set_ylabel(None)
+ax[1].set_xlabel("customer_id", fontsize=30)
+ax[1].set_title("By Frequency", loc="center", fontsize=50)
+ax[1].tick_params(axis='y', labelsize=30)
+ax[1].tick_params(axis='x', labelsize=35)
+ax[1].set_xticklabels(ax[1].get_xticklabels(), rotation=90, ha='center')
+
+sns.barplot(y="monetary", x="customer_id", data=rfm_df.sort_values(by="monetary", ascending=False).head(5), palette=colors, ax=ax[2])
+ax[2].set_ylabel(None)
+ax[2].set_xlabel("customer_id", fontsize=30)
+ax[2].set_title("By Monetary", loc="center", fontsize=50)
+ax[2].tick_params(axis='y', labelsize=30)
+ax[2].tick_params(axis='x', labelsize=35)
+ax[2].set_xticklabels(ax[2].get_xticklabels(), rotation=90, ha='center')
+
+st.pyplot(fig)
+
+# Footer
 st.caption('Copyright © Muhammad Ridho Abdillah 2023')
