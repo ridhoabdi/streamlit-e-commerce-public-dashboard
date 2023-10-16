@@ -78,7 +78,7 @@ def create_rfm_df(df):
     return rfm_df
 
 # Load cleaned data
-all_df = pd.read_csv('https://raw.githubusercontent.com/ridhoabdi/streamlit-e-commerce-public-dashboard/main/dashboard/all_data.csv')
+all_df = pd.read_csv('https://raw.githubusercontent.com/ridhoabdi/streamlit-e-commerce-public-dashboard/main/merge-dataset/all_data.csv')
 datetime_columns = ["order_approved_at", "order_delivered_carrier_date", "order_delivered_customer_date", "order_estimated_delivery_date", "order_purchase_timestamp", "shipping_limit_date"]
 all_df.sort_values(by="order_approved_at", inplace=True)
 all_df.reset_index(inplace=True)
@@ -92,7 +92,7 @@ max_date = all_df["order_approved_at"].max()
 
 with st.sidebar:
     # Menambahkan logo perusahaan
-    st.image("https://raw.githubusercontent.com/ridhoabdi/streamlit-e-commerce-public-dashboard/main/logo-e-commerce.png", width=200)
+    st.image("https://raw.githubusercontent.com/ridhoabdi/streamlit-e-commerce-public-dashboard/main/assets/logo-e-commerce.png", width=200)
     
     # Mengambil start_date & end_date dari date_input
     start_date, end_date = st.date_input(
