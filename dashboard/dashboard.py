@@ -215,7 +215,7 @@ ax.tick_params(axis='y', labelsize=20)
 ax.tick_params(axis='x', labelsize=15)
 st.pyplot(fig)
 
-# Best Customer Based on RFM Parameters
+# Best Customer Based on RFM Analysis Parameters
 st.subheader("Best Customer Based on RFM Parameters")
 
 col1, col2, col3 = st.columns(3)
@@ -229,7 +229,7 @@ with col2:
     st.metric("Average Frequency", value=avg_frequency)
 
 with col3:
-    avg_frequency = format_currency(rfm_df.monetary.mean(), "AUD", locale='es_CO') 
+    avg_frequency = format_currency(rfm_df.monetary.mean(), "BRL", locale='pt_BR') 
     st.metric("Average Monetary", value=avg_frequency)
 
 fig, ax = plt.subplots(nrows=1, ncols=3, figsize=(35, 15))
