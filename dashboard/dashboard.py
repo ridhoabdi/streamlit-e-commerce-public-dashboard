@@ -92,7 +92,7 @@ max_date = all_df["order_approved_at"].max()
 
 with st.sidebar:
     # Menambahkan logo perusahaan
-    st.image("https://github.com/dicodingacademy/assets/raw/main/logo.png")
+    st.image("https://raw.githubusercontent.com/ridhoabdi/streamlit-e-commerce-public-dashboard/main/logo-e-commerce.png", width=200)
     
     # Mengambil start_date & end_date dari date_input
     start_date, end_date = st.date_input(
@@ -113,7 +113,7 @@ bycity_df = create_bycity_df(main_df)
 rfm_df = create_rfm_df(main_df)
 
 # plot number of daily orders
-st.header('E-Commerce Dashboard :sparkles:')
+st.header('E-Commerce Public Dashboard :sparkles:')
 st.subheader('Daily Orders')
 
 col1, col2 = st.columns(2)
@@ -123,7 +123,7 @@ with col1:
     st.metric("Total orders", value=total_orders)
 
 with col2:
-    total_revenue = format_currency(daily_orders_df.revenue.sum(), "AUD", locale='es_CO') 
+    total_revenue = format_currency(daily_orders_df.revenue.sum(), "BRL", locale='pt_BR') 
     st.metric("Total Revenue", value=total_revenue)
 
 fig, ax = plt.subplots(figsize=(16, 8))
