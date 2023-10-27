@@ -9,7 +9,7 @@ This project aims to analyze the E-Commerce Public dataset, starting from defini
 - <b>Framework :</b> Streamlit
 - <b>Deployment :</b> Streamlit Cloud
 
-## Example Screenshot
+## Screenshot
 <img src="https://github.com/ridhoabdi/portfolio/blob/main/images/readme-each-repository/e-commerce-public-dashboard/e-commerce-public-dashboard.png" width="800" alt="E-Commerce Public Dashboard">
 
 ## Application Access
