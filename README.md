@@ -1,11 +1,19 @@
-## Proyek Analisis Data: E-Commerce Public Dashboard
+# E-Commerce Public Dashboard
 
-## Deskripsi
-Proyek ini bertujuan untuk menganalisis dataset E-Commerce Public mulai dari mendefinisikan pertanyaan hingga membuat kesimpulan dari hasil analisis agar dapat dijadikan insight yang berguna. Selain itu, terdapat dashboard yang dibuat menggunakan streamlit sebagai media untuk menyampaikan hasil analisis data secara interaktif.
+## Description
+This project aims to analyze the E-Commerce Public dataset, starting from defining questions to drawing conclusions from the analysis results to make them into useful insights. Additionally, there is a dashboard created using Streamlit as a medium to deliver the data analysis results interactively.
 
-## Tampilan E-Commerce Public Dashboard
-Berikut adalah link untuk melihat tampilan E-Commerce Dashboard yang dibuat menggunakan streamlit:
-https://drive.google.com/file/d/1yoeYwJq87wGjyUSB_YwpfEX7psjFYBqQ/view?usp=sharing
+## Specification
+- <b>Programming Language :</b> Python
+- <b>Notebook :</b> Google Colab
+- <b>Framework :</b> Streamlit
+- <b>Deployment :</b> Streamlit Cloud
+
+## Example Screenshot
+<img src="https://github.com/ridhoabdi/portfolio/blob/main/images/readme-each-repository/e-commerce-public-dashboard/e-commerce-public-dashboard.png" width="800" alt="E-Commerce Public Dashboard">
+
+## Application Access
+Here are the [link](https://e-commerce-public-dashboard-v1.streamlit.app/) that can be used
 
 ## Setup Environment
 pip install numpy pandas scipy matplotlib seaborn jupyter streamlit babel
